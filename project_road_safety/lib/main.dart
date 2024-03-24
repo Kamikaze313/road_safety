@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:project_road_safety/loginstyle.dart';
+import 'navigate_screen.dart';
 import 'map_screen.dart';
-
+import 'hello.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -15,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MapScreen(),
+      home: const NavigatePage(),
     );
   }
 }

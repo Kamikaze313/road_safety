@@ -1,28 +1,62 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'api.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
+import 'package:project_road_safety/api.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final LatLng startCord;
+  final LatLng endCord;
+
+  const MapScreen({
+    Key? key,
+    required this.startCord,
+    required this.endCord,
+  }) : super(key: key);
 
   @override
   State<MapScreen> createState() => _MapScreenState();
 }
 
 class _MapScreenState extends State<MapScreen> {
-  List listOfPoints = [];
-  List<LatLng> points = [];
-  LatLng startCord = LatLng(6.145332, 1.243344); // Start coordinate
-  LatLng endCord =
-      LatLng(6.125231015668568, 1.2160116523406839); // End coordinate
+  late List<dynamic> listOfPoints;
+  late List<LatLng> points;
+  late LatLng currentLocation; // Variable to store current location
 
-  getCoordinates() async {
+  @override
+  void initState() {
+    super.initState();
+    listOfPoints = [];
+    points = [];
+    currentLocation = widget.startCord; // Initialize to startCord
+    _fetchUserLocation(); // Start fetching user's location
+  }
+
+  // Function to fetch user's location every 500ms
+  void _fetchUserLocation() {
+    Timer.periodic(Duration(milliseconds: 100), (timer) {
+      _getUserLocation();
+    });
+  }
+
+  // Function to get user's location
+  void _getUserLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    setState(() {
+      currentLocation = LatLng(position.latitude, position.longitude);
+    });
+  }
+
+  Future<void> getCoordinates() async {
     var response = await http.get(getRouteUrl(
-        "${startCord.longitude},${startCord.latitude}",
-        '${endCord.longitude},${endCord.latitude}'));
+      "${widget.startCord.longitude},${widget.startCord.latitude}",
+      '${widget.endCord.longitude},${widget.endCord.latitude}',
+    ));
     setState(() {
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -30,6 +64,7 @@ class _MapScreenState extends State<MapScreen> {
         points = listOfPoints
             .map((p) => LatLng(p[1].toDouble(), p[0].toDouble()))
             .toList();
+            print(listOfPoints);
       }
     });
   }
@@ -38,56 +73,61 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FlutterMap(
-        options: MapOptions(zoom: 15, center: LatLng(6.131015, 1.223898)),
+        options: MapOptions(zoom: 14, center: currentLocation),
         children: [
-          // Layer that adds the map
           TileLayer(
             urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
             userAgentPackageName: 'dev.fleaflet.flutter_map.example',
           ),
-          // Layer that adds points the map
           MarkerLayer(
             markers: [
-              // First Marker
               Marker(
-                point: startCord,
+                point: widget.startCord,
                 width: 80,
                 height: 80,
                 child: IconButton(
-                  // Use 'child' instead of 'builder'
                   onPressed: () {
                     print('Start Marker tapped!');
-                    // Add your custom logic here
                   },
                   icon: const Icon(Icons.location_on),
                   color: Colors.green,
                   iconSize: 45,
                 ),
               ),
-
-              // Second Marker
               Marker(
-                point: endCord,
+                point: widget.endCord,
                 width: 80,
                 height: 80,
                 child: IconButton(
                   onPressed: () {
                     print('End Marker tapped!');
-                    // Add your custom logic here
                   },
                   icon: const Icon(Icons.location_on),
                   color: Colors.red,
                   iconSize: 45,
                 ),
               ),
+              Marker(
+                point: currentLocation, // Use currentLocation as the point
+                width: 80,
+                height: 80,
+                child: Icon(
+                    Icons.my_location,
+                    color: Colors.blue,
+                    size: 45,
+                  ),
+                ),
+  
             ],
           ),
-
-          // Polylines layer
           PolylineLayer(
             polylineCulling: false,
             polylines: [
-              Polyline(points: points, color: Colors.black, strokeWidth: 5),
+              Polyline(
+                points: points,
+                color: Colors.black,
+                strokeWidth: 5,
+              ),
             ],
           ),
         ],
