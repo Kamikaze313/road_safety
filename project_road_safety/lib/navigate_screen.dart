@@ -129,24 +129,44 @@ class _NavigatePageState extends State<NavigatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Navigate Page'),
+        title: Text('Enter your destination', style: TextStyle(fontFamily: 'Poppins')),
       ),
-      body: Padding(
+      body: Container(
+        color: Color(0xFF713C5D),
         padding: EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: placeNameController,
-              decoration: InputDecoration(
-                labelText: 'Place Name',
-                hintText: 'Enter the name of the place',
+            Container(
+              decoration: BoxDecoration(
+                color: Color(0xFFF3D9D8),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: TextField(
+                controller: placeNameController,
+                decoration: InputDecoration(
+                  labelText: 'Place Name',
+                  hintText: 'Enter the name of the place',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
               ),
             ),
             SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () => navigate(context),
-              child: Text('Navigate'),
+              child: Text(
+                'Lets GO!',
+                style: TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFA97D8D),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
             ),
           ],
         ),

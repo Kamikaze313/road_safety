@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -34,6 +33,7 @@ class _MapScreenState extends State<MapScreen> {
     points = [];
     currentLocation = widget.startCord; // Initialize to startCord
     _fetchUserLocation(); // Start fetching user's location
+    getCoordinates(); // Fetch coordinates when the page opens
   }
 
   // Function to fetch user's location every 500ms
@@ -64,7 +64,7 @@ class _MapScreenState extends State<MapScreen> {
         points = listOfPoints
             .map((p) => LatLng(p[1].toDouble(), p[0].toDouble()))
             .toList();
-            print(listOfPoints);
+        print(listOfPoints);
       }
     });
   }
@@ -72,72 +72,64 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FlutterMap(
-        options: MapOptions(zoom: 14, center: currentLocation),
-        children: [
-          TileLayer(
-            urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-            userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-          ),
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: widget.startCord,
-                width: 80,
-                height: 80,
-                child: IconButton(
-                  onPressed: () {
-                    print('Start Marker tapped!');
-                  },
-                  icon: const Icon(Icons.location_on),
-                  color: Colors.green,
-                  iconSize: 45,
+      body: ColorFiltered(
+        colorFilter: ColorFilter.mode(
+          Color.fromARGB(255, 158, 8, 207).withOpacity(1.0), // Keep hue and brightness constant
+          BlendMode.saturation,
+        ),
+        child: FlutterMap(
+          options: MapOptions(zoom: 14, center: currentLocation),
+          children: [
+            TileLayer(
+              urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+              userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+            ),
+            PolylineLayer(
+              polylineCulling: false,
+              polylines: [
+                Polyline(
+                  points: points,
+                  color: Color.fromARGB(255, 44, 44, 44),
+                  strokeWidth: 7,
                 ),
-              ),
-              Marker(
-                point: widget.endCord,
-                width: 80,
-                height: 80,
-                child: IconButton(
-                  onPressed: () {
-                    print('End Marker tapped!');
-                  },
-                  icon: const Icon(Icons.location_on),
-                  color: Colors.red,
-                  iconSize: 45,
+                Polyline(
+                  points: points,
+                  color: Color.fromARGB(255, 189, 60, 60),
+                  strokeWidth: 2,
                 ),
-              ),
-              Marker(
-                point: currentLocation, // Use currentLocation as the point
-                width: 80,
-                height: 80,
-                child: Icon(
-                    Icons.my_location,
-                    color: Colors.blue,
+              ],
+            ),
+            MarkerLayer(
+              markers: [
+                
+                Marker(
+                  point: widget.endCord,
+                  width: 80,
+                  height: 80,
+                  child: IconButton(
+                    onPressed: () {
+                      print('End Marker tapped!');
+                    },
+                    icon: const Icon(Icons.location_on),
+                    color: Colors.red,
+                    iconSize: 45,
+                  ),
+                ),
+                Marker(
+                  point: currentLocation, // Use currentLocation as the point
+                  width: 80,
+                  height: 80,
+                  child: Icon(
+                    Icons.directions_car_filled_rounded,
+                    color: Color.fromARGB(255, 26, 57, 83),
                     size: 45,
                   ),
                 ),
-  
-            ],
-          ),
-          PolylineLayer(
-            polylineCulling: false,
-            polylines: [
-              Polyline(
-                points: points,
-                color: Colors.black,
-                strokeWidth: 5,
-              ),
-            ],
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blueAccent,
-        onPressed: () => getCoordinates(),
-        child: const Icon(
-          Icons.route,
-          color: Colors.white,
+              
+              ],
+            ),
+            
+          ],
         ),
       ),
     );
