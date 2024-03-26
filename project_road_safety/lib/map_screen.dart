@@ -24,6 +24,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   late List<dynamic> listOfPoints;
   late List<LatLng> points;
+  late List<dynamic> listOfRoadConditions; // List to store road conditions data
   late LatLng currentLocation; // Variable to store current location
 
   @override
@@ -31,6 +32,7 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
     listOfPoints = [];
     points = [];
+    listOfRoadConditions = []; // Initialize listOfRoadConditions
     currentLocation = widget.startCord; // Initialize to startCord
     _fetchUserLocation(); // Start fetching user's location
     getCoordinates(); // Fetch coordinates when the page opens
@@ -53,22 +55,63 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> getCoordinates() async {
-    var response = await http.get(getRouteUrl(
+    // Make the first API request to get route coordinates
+    var routeResponse = await http.get(getRouteUrl(
       "${widget.startCord.longitude},${widget.startCord.latitude}",
       '${widget.endCord.longitude},${widget.endCord.latitude}',
     ));
+
+    // Process the first API response
     setState(() {
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        listOfPoints = data['features'][0]['geometry']['coordinates'];
+      if (routeResponse.statusCode == 200) {
+        var routeData = jsonDecode(routeResponse.body);
+        listOfPoints = routeData['features'][0]['geometry']['coordinates'];
         points = listOfPoints
             .map((p) => LatLng(p[1].toDouble(), p[0].toDouble()))
             .toList();
-        print(listOfPoints);
       }
     });
-  }
 
+    // Make the second API request for road conditions
+    try {
+      var roadConditionsResponse = await http.get(
+  Uri.parse('http://172.232.106.170:3000/roadConditions?latitude=${widget.startCord.latitude}&longitude=${widget.startCord.longitude}'),
+);
+
+
+      // Process the second API response
+      if (roadConditionsResponse.statusCode == 200) {
+        var roadConditionsData = jsonDecode(roadConditionsResponse.body);
+        
+        // Initialize listofroadconditions
+        List<dynamic> listofroadconditions = [];
+        
+        // Assuming road conditions data is in the same format as the provided example
+        for (var feature in roadConditionsData) {
+          var coordinates = feature['geometry']['coordinates'];
+          var type = feature['properties']['type'];
+          
+          // Add road conditions data to listofroadconditions
+          listofroadconditions.add({
+            'coordinates': coordinates,
+            'type': type,
+          });
+        }
+        
+        // Update the UI
+        setState(() {
+          // Assign listofroadconditions to the state variable
+          listOfRoadConditions = listofroadconditions;
+        });
+      } else {
+        // Handle the error or unexpected response
+        print('Failed to fetch road conditions. Status code: ${roadConditionsResponse.statusCode}');
+      }
+    } catch (error) {
+      // Handle any exceptions that occurred during the request
+      print('Error fetching road conditions: $error');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,7 +144,6 @@ class _MapScreenState extends State<MapScreen> {
             ),
             MarkerLayer(
               markers: [
-                
                 Marker(
                   point: widget.endCord,
                   width: 80,
@@ -125,13 +167,42 @@ class _MapScreenState extends State<MapScreen> {
                     size: 45,
                   ),
                 ),
-              
+                // Add markers for each road condition
+                for (var feature in listOfRoadConditions)
+                  Marker(
+                    point: LatLng(
+                      feature['coordinates'][1].toDouble(),
+                      feature['coordinates'][0].toDouble(),
+                    ),
+                    width: 80,
+                    height: 80,
+                    child: _buildMarkerIcon(feature['type']),
+                  ),
               ],
             ),
-            
           ],
         ),
       ),
     );
   }
+
+  // Helper function to build marker icon based on the type
+Widget _buildMarkerIcon(String type) {
+  // Determine marker icon based on the type
+  String assetName;
+  if (type == 'pothole') {
+    assetName = 'assets/pothole.png';
+  } else if (type == 'speed_breaker') {
+    assetName = 'assets/speed_breaker.png';
+  } else {
+    // Default icon
+    assetName = 'assets/default_icon.png'; // Path to a default icon
+  }
+
+  return Image.asset(
+    assetName,
+    width: 45,
+    height: 45,
+  );
+}
 }
