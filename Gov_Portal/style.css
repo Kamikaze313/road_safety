@@ -1,0 +1,117 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+table th,
+table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #713C5D;
+}
+
+table th {
+    background-color: #5A2B46;
+    color: #fff;
+}
+
+table tr:nth-child(even) {
+    background-color: #ddc5c5;
+}
+
+table tr:hover {
+    background-color: #fbeee0;
+}
+
+body {
+    background-color: #E2CBCB;
+}
+
+
+button#undo {
+    position: relative;
+     padding-left: 50px; /* Adjust the padding to position the icon */
+}
+
+button#undo::after {
+     content: "\2190"; /* Unicode for left arrow */
+     position:relative;
+     right: 10px;
+     bottom: 10px;
+     font-size: 60px;
+}
+
+button{
+  background-color: #fbeee0;
+  border: 2px solid #713C5D;
+  border-radius: 30px;
+  box-shadow: #713C5D 4px 4px 0 0;
+  color: #713C5D;
+  cursor: pointer;
+  display: inline-block;
+  font-weight: 600;
+  font-size: 18px;
+  padding: 0 18px;
+  line-height: 50px;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+button:hover {
+  background-color: #fff;
+}
+
+button:active {
+  box-shadow: #422800 2px 2px 0 0;
+  transform: translate(2px, 2px);
+}
+
+@media (min-width: 768px) {
+  button{
+    min-width: 120px;
+    padding: 0 25px;
+  }
+}
+button {
+    font-family: system-ui, sans-serif;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: .1em .6em;
+    font-weight: bold;  
+    border: none;
+    align-self: center;
+    display: block;
+    margin: 0 auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 200px;
+    height: 50px;
+  }
+#map {
+    height: 500px;
+    width: 500px;
+    margin: auto;
+    border: 10px solid #5A2B46;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    filter: hue-rotate(95deg);
+}
+
+
+
+
+h1 {
+    text-align: center;
+    color: #713C5D;
+    stroke: black;
+    stroke-width: 10px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 2.5em;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+    
+    
