@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head> 
+    <title>OpenStreetMap Example</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            background-image: url('C:\Users\USER\OneDrive\Desktop\portal\bg.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;  
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <h1>Government Portal for Pothole Data</h1>
+    <div id="map"></div>
+    <button id="undo"></button>
+    <button id="submit">Submit</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        if (!sessionStorage.getItem('user')) {
+        window.location.href = 'login.html';
+    }
+        var map = L.map('map').setView([9.847593, 76.953483], 11);
+        var circle;
+        var markers = [];
+        var table; // Declare table variable
+
+        L.tileLayer('https://{s}.tile.thunderforest.com/Mobile-Atlas/{z}/{x}/{y}.png?apikey=d9865cc563c44d0588dd256f83599bc3', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            maxZoom: 18,
+        }).addTo(map);
+        map.on('click', function(e) {
+            if (circle) {
+                map.removeLayer(circle);
+            }
+            circle = L.circle(e.latlng, {
+                color: 'green', // Updated color to purple
+                fillOpacity: 0.5,
+                radius: 10000 // 10 kilometers
+            }).addTo(map);
+        });
+        document.getElementById('undo').addEventListener('click', function() {
+            if (circle) {
+                map.removeLayer(circle);
+                circle = null;
+            }
+            if (table) {
+                table.remove(); // Remove the table if it exists
+                table = null; // Reset the table variable
+            }
+        });
+        document.getElementById('submit').addEventListener('click', function() {
+            if (circle) {
+                var latitude = circle.getLatLng().lat;
+                var longitude = circle.getLatLng().lng;
+                var url = `http://98.70.74.211:3000/roadConditions?latitude=${latitude}&longitude=${longitude}`;
+                console.log(url);
+                // Send the request to the server
+                fetch(url)
+                    .then(response => {
+                        // Handle the response
+
+                        if (response.ok) {
+                            // Request was successful
+                            response.json().then(data => {
+                                // Filter the data for potholes only
+                                var filteredData = data.filter(item => item.properties.type === 'pothole');
+
+                                // Sort the data by ID
+                                filteredData.sort((a, b) => a.properties.id - b.properties.id);
+
+                                // Remove previous table if any
+                                if (table) {
+                                    table.remove();
+                                }
+
+                                // Create the table
+                                table = document.createElement('table');
+                                table.border = '1';
+
+                                // Create the table header
+                                var headerRow = table.insertRow();
+                                var idHeader = headerRow.insertCell();
+                                idHeader.innerHTML = 'ID';
+                                var reporterHeader = headerRow.insertCell();
+                                reporterHeader.innerHTML = 'Reporter';
+                                var coordinatesHeader = headerRow.insertCell();
+                                coordinatesHeader.innerHTML = 'Coordinates';
+
+                                // Loop through the data and create table rows
+                                filteredData.forEach(item => {
+                                    var row = table.insertRow();
+                                    var idCell = row.insertCell();
+                                    idCell.innerHTML = item.properties.id;
+                                    var reporterCell = row.insertCell();
+                                    reporterCell.innerHTML = item.properties.reporter;
+                                    var coordinatesCell = row.insertCell();
+                                    coordinatesCell.innerHTML = item.geometry.coordinates.join(', ');
+
+                                    // Create marker for each coordinate
+                                    var marker = L.marker([item.geometry.coordinates[1], item.geometry.coordinates[0]]).addTo(map);
+                                    markers.push(marker);
+
+                                    // Add click event listener to show info
+                                    marker.on('click', function() {
+                                        alert(`ID: ${item.properties.id}\nReporter: ${item.properties.reporter}\nCoordinates: ${item.geometry.coordinates.join(', ')}`);
+                                    });
+                                });
+
+                                // Append the table to the document body
+                                document.body.appendChild(table);
+                            });
+                        } else {
+                            // Request failed
+                            console.log('Request failed');
+                        }
+                    })
+                    .catch(error => {
+                        // Handle any errors
+                        console.log('An error occurred:', error);
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

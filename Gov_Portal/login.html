@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head> 
+    <title>Sign In Page</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+</head>
+<body>
+    <h1>Safe Roads</h1>
+    <h2>Road Condition Monitoring Module</h2>
+    <h3>Sign In</h3>
+    <form id="loginForm">
+        <label for="accessId">Access ID:</label><br>
+        <input type="text" id="accessId" name="accessId"><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password"><br>
+        <input type="submit" value="Login">
+    </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var accessId = document.getElementById('accessId').value;
+            var password = document.getElementById('password').value;
+            var hashedPassword = CryptoJS.SHA256(password).toString();
+            console.log(accessId);
+            console.log(hashedPassword);
+            //in hashed_passwords.csv, check if accessId exists and if the hashed password matches, then redirect to the opening.html page the hashed password is in format access_id,hashed_password
+            fetch('hashed_passwords.csv?' + new Date().getTime())
+                .then(response => response.text())
+                .then(text => {
+                    var lines = text.split('\n');
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i];
+                        var parts = line.split(',');
+                        console.log(parts[0], parts[1]);
+                        if (parts[0].trim() == accessId && parts[1].trim() == hashedPassword) {
+                            sessionStorage.setItem('user', accessId);
+                            window.location.href = 'opening.html';
+                            alert('Login successful');
+                            return;
+                            
+                        }
+                    }
+                    alert('Invalid access ID or password');
+                });
+            
+        });
+    </script>
+</body>
+</html>
