@@ -16,8 +16,6 @@ import 'dart:typed_data';
 import 'package:project_road_safety/navigate_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:faker/faker.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 class MapScreen extends StatefulWidget {
   final LatLng startCord;
@@ -198,42 +196,40 @@ class _MapScreenState extends State<MapScreen> {
         "mongodb://jaanprjt:V4zh4th0pp3@ac-abzhbjl-shard-00-00.hpnvxpe.mongodb.net:27017,ac-abzhbjl-shard-00-01.hpnvxpe.mongodb.net:27017,ac-abzhbjl-shard-00-02.hpnvxpe.mongodb.net:27017/road_data?ssl=true&replicaSet=atlas-zzhu3n-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster0");
     await db?.open();
     print("Connected to MongoDB");
-
-    test();
   }
 
-  Future<void> test() async {
-    var faker = Faker();
-    var uuid = Uuid();
-    var id = faker.guid.guid();
-    var reporter = faker.person.name();
-    var latitude = faker.randomGenerator.decimal();
-    var longitude = faker.randomGenerator.decimal();
-    var collection = db!.collection('pothump');
-    // print last 3 documents inserted into the collection
-    var result = await collection.find().toList();
-    print("mongo result : $result");
-    try {
-      mongo.WriteResult res = await collection.insertOne({
-        "_id": uuid.v4(),
-        "type": "Feature",
-        "properties": {
-          "id": id,
-          "type": "pothole",
-          "reporter": reporter,
-        },
-        "geometry": {
-          "type": "Point",
-          "coordinates": [latitude, longitude]
-        },
-      });
+  // Future<void> test() async {
+  //   var faker = Faker();
+  //   var uuid = Uuid();
+  //   var id = faker.guid.guid();
+  //   var reporter = faker.person.name();
+  //   var latitude = faker.randomGenerator.decimal();
+  //   var longitude = faker.randomGenerator.decimal();
+  //   var collection = db!.collection('pothump');
+  //   // print last 3 documents inserted into the collection
+  //   var result = await collection.find().toList();
+  //   print("mongo result : $result");
+  //   try {
+  //     mongo.WriteResult res = await collection.insertOne({
+  //       "_id": uuid.v4(),
+  //       "type": "Feature",
+  //       "properties": {
+  //         "id": id,
+  //         "type": "pothole",
+  //         "reporter": reporter,
+  //       },
+  //       "geometry": {
+  //         "type": "Point",
+  //         "coordinates": [latitude, longitude]
+  //       },
+  //     });
 
-      print('Insertion acknowledged: ${res.isAcknowledged}');
-      print('Number of documents inserted: ${res.nInserted}');
-    } catch (e) {
-      print('Error during insertion: $e');
-    }
-  }
+  //     print('Insertion acknowledged: ${res.isAcknowledged}');
+  //     print('Number of documents inserted: ${res.nInserted}');
+  //   } catch (e) {
+  //     print('Error during insertion: $e');
+  //   }
+  // }
   // void startListening() {
   //   _timer = Timer.periodic(
   //       Duration(seconds: 1), (Timer t) => _listenForBluetoothData());
